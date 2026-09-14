@@ -14,13 +14,18 @@ const verifyToken = process.env.VERIFY_TOKEN;
 // Route for GET requests
 app.get('/', (req, res) => {
   const { 'hub.mode': mode, 'hub.challenge': challenge, 'hub.verify_token': token } = req.query;
-  const isValidChallenge = typeof challenge === 'string';
+  const challengeNumber = Number.parseInt(challenge, 10);
+  const isValidChallenge = Number.isSafeInteger(challengeNumber) && String(challengeNumber) === challenge;
 
-  if (mode === 'subscribe' && verifyToken && token === verifyToken && isValidChallenge) {
+  if (!verifyToken) {
+    return res.status(500).json({ error: 'VERIFY_TOKEN is not configured' });
+  }
+
+  if (mode === 'subscribe' && token === verifyToken && isValidChallenge) {
     console.log('WEBHOOK VERIFIED');
     res.status(200);
     res.type('text/plain');
-    res.end(challenge);
+    res.end(String(challengeNumber));
   } else {
     res.status(403).end();
   }
