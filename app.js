@@ -14,12 +14,11 @@ const verifyToken = process.env.VERIFY_TOKEN;
 // Route for GET requests
 app.get('/', (req, res) => {
   const { 'hub.mode': mode, 'hub.challenge': challenge, 'hub.verify_token': token } = req.query;
-  const challengeNumber = Number.parseInt(challenge, 10);
-  const isValidChallenge = Number.isSafeInteger(challengeNumber) && String(challengeNumber) === challenge;
+  const isValidChallenge = typeof challenge === 'string' && /^[A-Za-z0-9._:-]+$/.test(challenge);
 
   if (mode === 'subscribe' && verifyToken && token === verifyToken && isValidChallenge) {
     console.log('WEBHOOK VERIFIED');
-    res.type('text/plain').status(200).send(String(challengeNumber));
+    res.type('text/plain').status(200).send(challenge);
   } else {
     res.status(403).end();
   }
